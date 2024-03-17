@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	_ "embed"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -193,6 +194,12 @@ func (h *Headscale) OIDCCallback(
 	if err != nil {
 		return
 	}
+	var idTokenObj map[string]interface{}
+	if err := idToken.Claims(&idTokenObj); err == nil {
+		if idTokenJson, err := json.Marshal(idTokenObj); err == nil {
+			log.Info().Msg("ID token verified: " + string(idTokenJson))
+		}
+	}
 	idTokenExpiry := h.determineTokenExpiration(idToken.Expiry)
 
 	// TODO: we can use userinfo at some point to grab additional information about the user (groups membership, etc)
@@ -357,7 +364,7 @@ func extractIDTokenClaims(
 
 		return nil, err
 	}
-
+	claims.Email = claims.Username
 	return &claims, nil
 }
 
