@@ -52,3 +52,10 @@ compress: build
 generate:
 	rm -rf gen
 	buf generate proto
+
+go-build:
+	git fetch upstream; \
+	latestTag=$$(git describe --tags --dirty) && \
+	CGO_ENABLED=0 go build -ldflags="-s -w -X github.com/juanfont/headscale/cmd/headscale/cli.Version=$$latestTag-fork" cmd/headscale/headscale.go && \
+	ls -alh ./headscale && \
+	./headscale version
